@@ -57,6 +57,11 @@ GUEST_IMAGE=ubuntu-2204.qcow2
 #          - 8.8.8.8
 #          - 8.8.4.4
 # 3. netplan apply
+# 4. need to extend the disk size by:
+#    qemu-img resize ubuntu-24.04-server-cloudimg-amd64.img +10G
+#    sudo growpart /dev/vda 1
+#    sudo resize2fs /dev/vda1
+#    df -h
 GUEST_IMAGE=ubuntu-24.04-server-cloudimg-amd64.img
 KERNEL_SRC=linux-tdx-src
 QEMU_SRC=qemu-tdx-src

@@ -33,6 +33,9 @@ domain_stats = ['alb_count', 'alb_failed', 'alb_pushed',
 
 SCHEDSTAT = '/proc/schedstat'
 
+interval = 1
+watch_cpu = ""
+
 # Terminal handling is taken from http://blog.taz.net.au/2012/04/09/getting-the-terminal-size-in-python/
 def get_terminal_width(fd = 1):
     if not os.isatty(fd):
@@ -71,11 +74,18 @@ def read_schedstat():
             elif valgroup.startswith('cpu'):
                 cpu = valgroup
 
+                if (watch_cpu != "") and (cpu != watch_cpu):
+                    continue
+
                 stats[cpu] = {}
                 stats[cpu]['stats'] = cpustats = {}
 
                 parse_stats(cpustats, values, cpu_stats)
             elif valgroup.startswith('domain'):
+
+                if (watch_cpu != "") and (cpu != watch_cpu):
+                    continue
+
                 stats[cpu][valgroup] = domstats = {}
 
                 values.pop(0)        # cpumask
@@ -121,22 +131,22 @@ def diff_sched_stats(baseline, current):
 
     return scheddiff, list(sorted(diffparams))
 
-# Main loop
-baseline = read_schedstat()
-
-interval = 1
-
 try:
-    opts, args = getopt.getopt(sys.argv[1:], '-i:',
-                 ['interval='])
+    opts, args = getopt.getopt(sys.argv[1:], 'i:c:',
+                 ['interval=', 'cpu='])
     for opt_name, opt_value in opts:
         if opt_name in ('-i', '--interval'):
             interval = int(opt_value)
+        if opt_name in ('-c', '--cpu'):
+            watch_cpu = "cpu"+opt_value
 
 except getopt.GetoptError:
     # 128 - invalid argument to exit
-    print("Invaid input parameters. Please use -i interval or without any parameter")
+    print("Invaid input parameters. Please use -i interval - c cpu or without any parameter")
     sys.exit(128)
+
+# Main loop
+baseline = read_schedstat()
 
 while True:
     # Sleep till new data will become available after 1 second

@@ -35,6 +35,8 @@ SCHEDSTAT = '/proc/schedstat'
 
 interval = 1
 watch_cpu = ""
+field=""
+sum_dict= {}
 
 # Terminal handling is taken from http://blog.taz.net.au/2012/04/09/getting-the-terminal-size-in-python/
 def get_terminal_width(fd = 1):
@@ -132,13 +134,15 @@ def diff_sched_stats(baseline, current):
     return scheddiff, list(sorted(diffparams))
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:c:',
-                 ['interval=', 'cpu='])
+    opts, args = getopt.getopt(sys.argv[1:], 'i:c:f:',
+                 ['interval=', 'cpu=', 'field='])
     for opt_name, opt_value in opts:
         if opt_name in ('-i', '--interval'):
             interval = int(opt_value)
         if opt_name in ('-c', '--cpu'):
             watch_cpu = "cpu"+opt_value
+        if opt_name in ('-f', '--field'):
+            field = opt_value
 
 except getopt.GetoptError:
     # 128 - invalid argument to exit
@@ -190,5 +194,16 @@ while True:
             # If any of values was changed, print them
             if any(values):
                 print(fmtstr.format(*([param] + values)))
+                if (field !='' and field in param):
+                    sum_val = 0;
+                    for every_val in values:
+                        if (every_val != ''):
+                            if param in sum_dict.keys():
+                                sum_dict[param] += int(every_val);
+                            else:
+                                sum_dict[param] = int(every_val);
+
+    print("Total statistics on all CPUS: ");
+    print(sum_dict);
 
     baseline = current

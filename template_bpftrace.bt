@@ -33,6 +33,29 @@ tracepoint:sched:sched_switch
 */
 
 /*
+
+kretfunc:select_task_rq_fair
+{
+        $p = (struct task_struct *)args->p;
+        if ($p->comm == "tbench") {
+                if ($p->thread_info.cpu != retval) {
+                        @wakeup_migrate_tbench = count();
+                } else {
+                        @wakeup_prev_tbench = count();
+                }
+        }
+        if ($p->comm == "tbench_srv") {
+                if ($p->thread_info.cpu != retval) {
+                        @wakeup_migrate_tbench_server = count();
+                } else {
+                        @wakeup_prev_tbench_server = count();
+                }
+        }
+}
+
+*/
+
+/*
 kprobe:check_preempt_curr
 {
 	@check_preempt_curr[kstack] = count();

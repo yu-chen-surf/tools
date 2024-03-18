@@ -1,5 +1,6 @@
-The tool is divided into three parts: scheduler related scripts/source files,
-simd related scripts/source files, lkp relateds scripts/source files.
+The tool is divided into four parts: scheduler related scripts/source files,
+simd related scripts/source files, lkp relateds scripts/source files, kvm
+related.
 
 simd directory is composed of two parts, the amx(tmul) and avx512 tests.
 

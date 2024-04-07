@@ -37,6 +37,12 @@ GUEST_IMAGE=ubuntu-2204.qcow2
 KERNEL_SRC=linux-tdx-src
 QEMU_SRC=qemu-tdx-src
 MMTESTS_SRC=mmtests
+
+#user nic
+netstr="-device virtio-net-pci,netdev=nic0 
+	-netdev user,id=nic0,hostfwd=tcp::10022-:22  "
+
+#passthrough nic
 netstr="-device virtio-net-pci,netdev=nic0 \
         -netdev tap,id=nic0,br=virbr0,helper=/usr/libexec/qemu-bridge-helper,vhost=on \
         -device vhost-vsock-pci,guest-cid=11 "

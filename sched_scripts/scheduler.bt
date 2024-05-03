@@ -1,0 +1,96 @@
+#!/usr/bin/env bpftrace
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("Tracing CPU scheduler... Hit Ctrl-C to end.\n");
+}
+
+tracepoint:sched:sched_switch
+{
+	@qtime[args->next_pid] = nsecs;
+
+	$ns = @qtime[args->prev_pid];
+	if (args->prev_state == TASK_RUNNING) {
+		if ($ns) {
+			@usecs_before_preempted = hist((nsecs - $ns) / 1000);
+			delete(@qtime[args->prev_pid]);
+		}
+		@task_preempt = count();
+	} else {
+		if ($ns) {
+			@usecs_before_sleep = hist((nsecs - $ns) / 1000);
+			delete(@qtime[args->prev_pid]);
+		}
+		@task_sleep = count();
+	}
+}
+
+kretfunc:select_task_rq_fair
+{
+        $p = (struct task_struct *)args->p;
+        if ($p->thread_info.cpu != retval) {
+                @wakeup_migrate = count();
+        } else {
+                @wakeup_prev = count();
+        }
+}
+
+tracepoint:sched:sched_move_numa
+{
+	@move_numa_cnt = count();
+}
+
+tracepoint:sched:sched_stick_numa
+{
+	@stick_numa_cnt = count();
+}
+
+tracepoint:sched:sched_swap_numa
+{
+	@swap_numa_cnt = count();
+}
+
+tracepoint:sched:sched_vma_skip_numa
+{
+	@skip_vma_numa_cnt = count();
+}
+
+/*
+kprobe:check_preempt_curr
+{
+	@check_preempt_curr[kstack] = count();
+}
+*/
+
+interval:s:10
+{
+	time("\n%H:%M:%S scheduler statistics: \n");
+	print(@task_preempt);
+	clear(@task_preempt);
+	print(@task_sleep);
+	clear(@task_sleep);
+	print(@usec_before_preempt);
+	clear(@usec_before_preempt);
+	print(@usec_before_sleep);
+	clear(@usec_before_sleep);
+	print(@wakeup_migrate);
+	clear(@wakeup_migrate);
+	print(@wakeup_prev);
+	clear(@wakeup_prev);
+	print(@move_numa_cnt);
+	clear(@move_numa_cnt);
+	print(@stick_numa_cnt);
+	clear(@stick_numa_cnt);
+	print(@swap_numa_cnt);
+	clear(@swap_numa_cnt);
+	print(@vma_numa_cnt);
+	clear(@vma_numa_cnt);
+}
+
+END
+{
+	/*
+	clear(@sender_preempt);
+	*/
+}

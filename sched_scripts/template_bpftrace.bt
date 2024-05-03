@@ -53,6 +53,25 @@ kretfunc:select_task_rq_fair
         }
 }
 
+tracepoint:sched:sched_move_numa
+{
+	@move_numa_cnt = count();
+}
+
+tracepoint:sched:sched_stick_numa
+{
+	@stick_numa_cnt = count();
+}
+
+tracepoint:sched:sched_swap_numa
+{
+	@swap_numa_cnt = count();
+}
+
+tracepoint:sched:sched_vma_skip_numa
+{
+	@skip_vma_numa_cnt = count();
+}
 */
 
 /*

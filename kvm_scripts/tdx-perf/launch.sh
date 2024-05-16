@@ -151,6 +151,7 @@ function bind_vcpu() {
 
 function stabilize_host() {
 
+	pkill -9 tuned
 	pepc.standalone pstates config --governor performance
 	pepc.standalone pstates config --turbo off
 	pepc.standalone cstates config --disable C6

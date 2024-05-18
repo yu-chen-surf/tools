@@ -51,7 +51,7 @@ tracepoint:sched:sched_swap_numa
 	@swap_numa_cnt = count();
 }
 
-tracepoint:sched:sched_vma_skip_numa
+tracepoint:sched:sched_skip_vma_numa
 {
 	@skip_vma_numa_cnt = count();
 }
@@ -70,10 +70,10 @@ interval:s:10
 	clear(@task_preempt);
 	print(@task_sleep);
 	clear(@task_sleep);
-	print(@usec_before_preempt);
-	clear(@usec_before_preempt);
-	print(@usec_before_sleep);
-	clear(@usec_before_sleep);
+	print(@usecs_before_preempted);
+	clear(@usecs_before_preempted);
+	print(@usecs_before_sleep);
+	clear(@usecs_before_sleep);
 	print(@wakeup_migrate);
 	clear(@wakeup_migrate);
 	print(@wakeup_prev);
@@ -84,8 +84,8 @@ interval:s:10
 	clear(@stick_numa_cnt);
 	print(@swap_numa_cnt);
 	clear(@swap_numa_cnt);
-	print(@vma_numa_cnt);
-	clear(@vma_numa_cnt);
+	print(@skip_vma_numa_cnt);
+	clear(@skip_vma_numa_cnt);
 }
 
 END

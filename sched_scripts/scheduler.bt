@@ -70,10 +70,6 @@ interval:s:10
 	clear(@task_preempt);
 	print(@task_sleep);
 	clear(@task_sleep);
-	print(@usecs_before_preempted);
-	clear(@usecs_before_preempted);
-	print(@usecs_before_sleep);
-	clear(@usecs_before_sleep);
 	print(@wakeup_migrate);
 	clear(@wakeup_migrate);
 	print(@wakeup_prev);
@@ -86,6 +82,10 @@ interval:s:10
 	clear(@swap_numa_cnt);
 	print(@skip_vma_numa_cnt);
 	clear(@skip_vma_numa_cnt);
+	print(@usecs_before_preempted);
+	clear(@usecs_before_preempted);
+	print(@usecs_before_sleep);
+	clear(@usecs_before_sleep);
 }
 
 END

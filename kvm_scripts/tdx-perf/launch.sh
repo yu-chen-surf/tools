@@ -42,7 +42,7 @@ MMTESTS_SRC=mmtests
 netstr="-device virtio-net-pci,netdev=nic0 
 	-netdev user,id=nic0,hostfwd=tcp::10022-:22  "
 
-#passthrough nic
+#virtio nic - > could be replaced by passthrough nic at runtime
 netstr="-device virtio-net-pci,netdev=nic0 \
         -netdev tap,id=nic0,br=virbr0,helper=/usr/libexec/qemu-bridge-helper,vhost=on \
         -device vhost-vsock-pci,guest-cid=11 "

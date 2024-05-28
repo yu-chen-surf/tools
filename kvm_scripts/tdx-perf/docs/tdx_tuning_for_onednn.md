@@ -1,6 +1,6 @@
 performance tuning for OneDNN on TDX
 =================================
-Intel [TDX](https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/trust-domain-extensions.html#:~:text=Intel%C2%AE%20TDX%20is%20Intel's,a%20virtual%20machine%20(VM).) is Intel’s confidential computing technology that provides the data security in the cloud environment. The main usage of TDX is to present the host from accessing the private data in the VM guest. This document descibes the step on how to tune the performance of OneDNN using benchdnn on TDX guest. The content includes what the performance bottlenneck is and how we investigate and root cause the issue, and finally provide the recommended setting for AI workloads.
+Intel [TDX](https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/trust-domain-extensions.html#:~:text=Intel%C2%AE%20TDX%20is%20Intel's,a%20virtual%20machine%20(VM).) is Intel’s confidential computing technology that provides the data security in the cloud environment. The main usage of TDX is to present the host from accessing the private data in the VM guest. This document descibes the step on how to tune the performance of benchdnn(benchmark provided by OneDNN) on TDX guest. Including how the benchmark is tested,  how to investigate the performance gap, and finally provide the recommended settings for AI workloads.
 
 # Table of Contents
 
@@ -10,7 +10,7 @@ Intel [TDX](https://www.intel.com/content/www/us/en/products/docs/accelerator-en
 - [summary](#summary)
 
 # Test settings
-The test is to compare the performance difference between a conventional VM and a TDX VM. Both TensorFlow and Pytorch have OneDNN embedded as the libray. Although running full model via TensorFlow, Pytorch would be more close to real production environment, it would be more effcient to expose the bottleneck by running specific sub-operations such as convolutions/matmuls, etc. Choose benchdnn for this purpose, which is provided by OneDNN. To get rid of any run-to-run variance, each vCPU of the VM instance is bind to 1 physical CPU on numa node 0. The cpufreq governor is set to "performance" mode, and turbo boost is disabled. The C-states deeper than C1 are all disabled. The Linux kernel is based on v6.8-rc5, with the basic TDX [patches](https://lore.kernel.org/lkml/cover.1708933498.git.isaku.yamahata@intel.com/) applied.
+The test is to compare the performance difference between a conventional VM and a TDX VM. Both TensorFlow and Pytorch leverage OneDNN library for basic operation . Although running full model via TensorFlow, Pytorch would be closer to real production environment, it would be easier to expose any bottleneck by running specific sub-operations such as convolutions/matrix multiply, etc. Choose benchdnn for this purpose, which is provided by OneDNN. To get rid of any run-to-run variance, each vCPU of the VM instance is bind to 1 physical CPU on numa node 0. The cpufreq governor is set to "performance" mode, and turbo boost is disabled. The C-states deeper than C1 are all disabled. The Linux kernel is based on v6.8-rc5, with the basic TDX [patches](https://lore.kernel.org/lkml/cover.1708933498.git.isaku.yamahata@intel.com/) applied.
 
 # Performance gaps
 According to initial test, the throughput of training/inference-batched/inference-lb on a TDX VM is **18% ~ 125%** lower than that on a conventional VM. 
@@ -130,5 +130,3 @@ One typical factor to impact the memory access is the huge page. Since on the ho
 According to the whole investigation process, the Transparent Huge Page is the key factor to impact memory intensive workload. It is recommended to enable THP for AI workloads. The reason why THP brings benefit might that, it reduce the TLB miss when trying to convert GPA(guest physical address) to HPA(host physical address), thus less EPT walk is needed. Besides, even if TLB is missed, THP reduces the EPT page walk level by 1 (from PTE to PMD). This could largely reduced the overhead of address translating thus improve the performance.
 
 Besides, currently the KVM is lacking of mechanism like sysfs to query if the KVM has enabled transparent huge page in EPT. It might be worthy to provide this interface to facilitate the end user. 
-
-

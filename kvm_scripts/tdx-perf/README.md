@@ -8,6 +8,11 @@ Such as comparing the difference between a normal guest and a tdx
 guest, checking if there is any performance regression for every
 kernel release, etc.
 
+This tool is inspired by the TDX performance tuning guidance published
+at [here](https://www.intel.com/content/www/us/en/developer/articles/technical/trust-domain-extensions-on-4th-gen-xeon-processors.html)
+And this tool also follows the guidance of TDX performance tuning
+document from Shiny's team.
+
 ## Invocation
 
 It is recommended to run the test as root to avoid unexpected issues.

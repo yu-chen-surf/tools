@@ -17,7 +17,7 @@ install_kernel()
 
 	export http_proxy='http://child-prc.intel.com:913';
 	export https_proxy='http://child-prc.intel.com:913';
-	git clone --branch kvm-upstream-next https://github.com/intel/tdx.git $KERNEL_SRC
+	git clone --branch tdx_6.8-rc5-v19-hugepage https://github.com/intel-sandbox/os.linux.kernel.fyin_optimal_page $KERNEL_SRC
 	cd $KERNEL_SRC
 	patch -p1 < ../kselftest_tdx.diff
 	cp $KERNEL_CONFIG .config

@@ -36,6 +36,7 @@ install_qemu()
 	export https_proxy='http://child-prc.intel.com:913';
 	git clone https://github.com/intel-sandbox/fyin.qemu-64K --branch qemu-tdx-passthru $QEMU_SRC
 	cd $QEMU_SRC
+	patch -p1 < ../qemu_thp_support_tdx.diff
 	./configure --enable-kvm --target-list=x86_64-softmmu
 	make -j$nrcpu
 	cp build/qemu-system-x86_64 /usr/bin/$QEMU_IMAGE

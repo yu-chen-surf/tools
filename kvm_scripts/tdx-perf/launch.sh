@@ -34,6 +34,8 @@ INITRD_IMAGE=/boot/initrd.img-$(uname -r)
 BIOS_IMAGE=OVMF.fd
 QEMU_IMAGE=qemu-tdx-bin
 GUEST_IMAGE=ubuntu-2204.qcow2
+#use virt-customize to set the password, ubuntu 22.04 supported
+GUEST_IMAGE=ubuntu-24.04-server-cloudimg-amd64.img
 KERNEL_SRC=linux-tdx-src
 QEMU_SRC=qemu-tdx-src
 MMTESTS_SRC=mmtests
@@ -102,6 +104,29 @@ function launch_tdx_vm() {
         -kernel ${KERNEL_IMAGE} \
 	-initrd ${INITRD_IMAGE} \
 	-append "root=/dev/vda1 rw console=hvc0 earlyprintk=ttyS0 ignore_loglevel earlyprintk l1tf=off log_buf_len=200M nokaslr tsc=reliable apparmor=0 ${extra_cmd}" \
+        -monitor pty &
+
+	sleep 45
+}
+
+function launch_gen_vm_simple() {
+
+  numactl -m 0 -N 0 $QEMU_IMAGE \
+        -accel kvm \
+        -no-reboot \
+        -name process=genvm,debug-threads=on \
+        -cpu host,host-phys-bits,pmu=off \
+        -smp cpus=${NR_VCPUS},sockets=1 \
+        -m 4G \
+        -machine q35,kernel_irqchip=split \
+        -nographic \
+        -vga none \
+        ${netstr}-chardev stdio,id=mux,mux=on,signal=off \
+        -device virtio-serial,romfile= \
+        -device virtconsole,chardev=mux \
+        -serial chardev:mux \
+        -monitor chardev:mux \
+        -drive file=${GUEST_IMAGE},if=virtio,format=qcow2 \
         -monitor pty &
 
 	sleep 45
@@ -210,10 +235,14 @@ function launch_vm() {
 		extra_cmd=" host_ip=$host_ip host_path=$test_path"
 	fi
 
+	if [ "$tdx" = "0" ]; then
+		launch_gen_vm
+	fi
 	if [ "$tdx" = "1" ]; then
 		launch_tdx_vm
-	else
-		launch_gen_vm
+	fi
+	if [ "$tdx" = "2" ]; then
+		launch_gen_vm_simple
 	fi
 	bind_vcpu
 }

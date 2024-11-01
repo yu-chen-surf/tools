@@ -34,7 +34,29 @@ INITRD_IMAGE=/boot/initrd.img-$(uname -r)
 BIOS_IMAGE=OVMF.fd
 QEMU_IMAGE=qemu-tdx-bin
 GUEST_IMAGE=ubuntu-2204.qcow2
-#use virt-customize to set the password, ubuntu 22.04 supported
+
+# The ubuntu-24.04-server-cloudimg-amd64.img
+# can be downloaded via:
+# https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
+# 1. use virt-customize to set the password, ubuntu 22.04 supported
+#    sudo virt-customize -a your_image.qcow2 --root-password "YOUR_PASSWORD"
+# 2. Edit the config in VM guest:
+# /etc/netplan/01-netcfg.yaml
+# network:
+#  version: 2
+#  ethernets:
+#    enp0s1:
+#      dhcp4: no
+#      addresses:
+#        - 10.0.2.15/24
+#      routes:
+#        - to: default
+#          via: 10.0.2.2
+#      nameservers:
+#        addresses:
+#          - 8.8.8.8
+#          - 8.8.4.4
+# 3. netplan apply
 GUEST_IMAGE=ubuntu-24.04-server-cloudimg-amd64.img
 KERNEL_SRC=linux-tdx-src
 QEMU_SRC=qemu-tdx-src

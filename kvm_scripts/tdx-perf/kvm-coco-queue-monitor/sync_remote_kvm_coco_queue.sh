@@ -3,12 +3,9 @@
 set -x
 
 GIT=/usr/bin/git
-#project_dir=/home/sdp/fyin/kvm_coco_snapshot
-project_dir=/data/nvme/src/fengwei/kvm_coco_snapshot
+current_path=$(pwd)
+project_dir=${current_path}/kvm_coco_snapshot
 logfile=$project_dir/sync.log
-
-log_dir=/data/nvme/src/fengwei
-logfile=$log_dir/test.log
 
 upstream_kvm_url=https://git.kernel.org/pub/scm/virt/kvm/kvm.git
 upstream_kvm_dir=$project_dir/kvm_upstream

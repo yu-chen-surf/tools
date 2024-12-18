@@ -76,6 +76,12 @@ netstr="-device virtio-net-pci,netdev=nic0 \
         -netdev tap,id=nic0,br=virbr0,helper=/usr/libexec/qemu-bridge-helper,vhost=on \
         -device vhost-vsock-pci,guest-cid=11 "
 
+#gpu passthrough
+#-object iommufd,id=iommufd0 \
+#-device pcie-root-port,id=pci.1,bus=pcie.0 \
+#-device vfio-pci,host=97:00.0,id=nv_gpu,bus=pci.1,iommufd=iommufd0 \
+
+
 #number of vcpus, bind to physical cpus starts from 1 to NR_VCPUS-1
 NR_VCPUS=16
 # something like 0000:16:00.0

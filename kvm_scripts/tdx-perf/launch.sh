@@ -32,7 +32,7 @@ extra_cmd=""
 KERNEL_IMAGE=/boot/vmlinuz-$(uname -r)
 INITRD_IMAGE=/boot/initrd.img-$(uname -r)
 BIOS_IMAGE=OVMF.fd
-QEMU_IMAGE=qemu-tdx-bin
+QEMU_IMAGE=qemu-system-x86_64
 GUEST_IMAGE=ubuntu-2204.qcow2
 
 # The ubuntu-24.04-server-cloudimg-amd64.img
@@ -40,24 +40,25 @@ GUEST_IMAGE=ubuntu-2204.qcow2
 # https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
 # 1. use virt-customize to set the password, ubuntu 22.04 supported
 #    sudo virt-customize -a your_image.qcow2 --root-password "YOUR_PASSWORD"
-# 2. Edit the config in VM guest:
+# 2. Edit the config in VM guest(note, need to use bridge mode)
 # /etc/netplan/01-netcfg.yaml
-# network:
+#network:
 #  version: 2
 #  ethernets:
 #    enp0s1:
-#      dhcp4: no
-#      addresses:
-#        - 10.0.2.15/24
-#      routes:
-#        - to: default
-#          via: 10.0.2.2
-#      nameservers:
-#        addresses:
-#          - 8.8.8.8
-#          - 8.8.4.4
+#      dhcp4: true
+#      optional: true
 # 3. netplan apply
-# 4. need to extend the disk size by:
+# 4. sudo ssh-keygen -A
+#    ssh-keygen: generating new host keys: RSA ECDSA ED25519
+# 5. paste the public key of the host to the guest's ~/.ssh/authorized_keys
+# 6. enable authorized key/password login:
+#    /etc/ssh/sshd_config
+#    PubkeyAuthentication yes
+#    AuthorizedKeysFile      .ssh/authorized_keys
+#    PasswordAuthentication yes
+# 7. sudo systemctl restart ssh
+# 8. need to extend the disk size by:
 #    qemu-img resize ubuntu-24.04-server-cloudimg-amd64.img +10G
 #    sudo growpart /dev/vda 1
 #    sudo resize2fs /dev/vda1
@@ -185,12 +186,9 @@ function launch_gen_vm() {
         -serial chardev:mux \
         -monitor chardev:mux \
         -drive file=${GUEST_IMAGE},if=virtio,format=qcow2 \
-        -kernel ${KERNEL_IMAGE} \
-	-initrd ${INITRD_IMAGE} \
-	-append "root=/dev/vda1 rw console=hvc0 earlyprintk=ttyS0 ignore_loglevel earlyprintk l1tf=off log_buf_len=200M nokaslr tsc=reliable apparmor=0 ${extra_cmd}" \
-        -monitor pty &
+        -monitor pty
 
-	sleep 45
+	#sleep 45
 }
 
 function bind_vcpu() {
@@ -488,16 +486,16 @@ done
 rm -rf *.log
 rm -rf *.svg
 
-pre_install
-stabilize_host
-run_kselftest
+#pre_install
+#stabilize_host
+#run_kselftest
 
 # run non-tdx benchmarks
-launch_vm 0 1
-run_benchmarks 0 1
+launch_vm 0 0
+#run_benchmarks 0 1
 
 # run tdx benchmarks
-launch_vm 1 1
-run_benchmarks 1 1
+#launch_vm 1 1
+#run_benchmarks 1 1
 
-get_benchmarks_result
+#get_benchmarks_result

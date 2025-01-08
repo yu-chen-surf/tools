@@ -143,6 +143,37 @@ function launch_tdx_vm() {
 	sleep 45
 }
 
+function launch_gen_vm_numa() {
+
+  numactl -m 0 -N 0 $QEMU_IMAGE \
+        -accel kvm \
+        -no-reboot \
+        -name process=genvm,debug-threads=on \
+        -cpu host,host-phys-bits,pmu=off \
+        -smp cpus=${NR_VCPUS},sockets=4,cores=$((NR_VCPUS/4)),threads=1 \
+        -object memory-backend-ram,id=mem0,size=8G \
+        -object memory-backend-ram,id=mem1,size=8G \
+        -object memory-backend-ram,id=mem2,size=8G \
+        -object memory-backend-ram,id=mem3,size=8G \
+        -numa node,cpus=0-7,nodeid=0,memdev=mem0 \
+        -numa node,cpus=8-15,nodeid=1,memdev=mem1 \
+        -numa node,cpus=16-23,nodeid=2,memdev=mem2 \
+        -numa node,cpus=24-31,nodeid=3,memdev=mem3 \
+        -m 32G \
+        -machine q35,kernel_irqchip=split \
+        -nographic \
+        -vga none \
+        ${netstr}-chardev stdio,id=mux,mux=on,signal=off \
+        -device virtio-serial,romfile= \
+        -device virtconsole,chardev=mux \
+        -serial chardev:mux \
+        -monitor chardev:mux \
+        -drive file=${GUEST_IMAGE},if=virtio,format=qcow2 \
+        -monitor pty
+
+        #sleep 45
+}
+
 function launch_gen_vm_simple() {
 
   numactl -m 0 -N 0 $QEMU_IMAGE \
@@ -274,6 +305,9 @@ function launch_vm() {
 	fi
 	if [ "$tdx" = "2" ]; then
 		launch_gen_vm_simple
+	fi
+	if [ "$tdx" = "3" ]; then
+		launch_gen_vm_numa
 	fi
 	bind_vcpu
 }

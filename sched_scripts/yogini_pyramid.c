@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -14,6 +15,10 @@ volatile int exit_flag[THREAD_COUNT] = {0};
 
 void* thread_func(void* arg) {
     int thread_id = *(int*)arg;
+    char thread_name[16];
+
+    snprintf(thread_name, sizeof(thread_name), "yogini_%d", thread_id);
+    pthread_setname_np(pthread_self(), thread_name);
     printf("Thread %d started.\n", thread_id);
 
     while (!exit_flag[thread_id - 1]) {

@@ -91,6 +91,18 @@ GUEST_NIC_BFD=""
 #test duration in seconds
 DURATION=30
 
+#   -smp cpus=${NR_VCPUS},sockets=4,cores=$((NR_VCPUS/4)),threads=1 \
+#        -object memory-backend-ram,id=mem0,size=8G \
+#        -object memory-backend-ram,id=mem1,size=8G \
+#        -object memory-backend-ram,id=mem2,size=8G \
+#        -object memory-backend-ram,id=mem3,size=8G \
+#        -numa node,cpus=0-3,nodeid=0,memdev=mem0 \
+#        -numa node,cpus=4-7,nodeid=1,memdev=mem1 \
+#        -numa node,cpus=8-11,nodeid=2,memdev=mem2 \
+#        -numa node,cpus=12-15,nodeid=3,memdev=mem3 \
+#        -m 32G \
+#
+
 function pre_install() {
 	. $test_path/preinstall.sh $KERNEL_SRC $QEMU_SRC $QEMU_IMAGE $MMTESTS_SRC $NR_VCPUS $DURATION
 }

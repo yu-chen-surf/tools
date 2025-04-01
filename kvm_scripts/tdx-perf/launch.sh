@@ -38,8 +38,9 @@ GUEST_IMAGE=ubuntu-2204.qcow2
 # The ubuntu-24.04-server-cloudimg-amd64.img
 # can be downloaded via:
 # https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
-# 1. use virt-customize to set the password, ubuntu 22.04 supported
-#    sudo virt-customize -a your_image.qcow2 --root-password "YOUR_PASSWORD"
+# 1. use virt-customize to set the password, ubuntu 24.04 supported
+#    apt install guestfs-tools
+#    virt-customize -a ubuntu-24.04-server-cloudimg-amd64.img --root-password password:123456
 # 2. Edit the config in VM guest(note, need to use bridge mode)
 # /etc/netplan/01-netcfg.yaml
 #network:

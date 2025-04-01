@@ -181,7 +181,8 @@ function launch_gen_vm_numa() {
         -device virtconsole,chardev=mux \
         -serial chardev:mux \
         -monitor chardev:mux \
-        -drive file=${GUEST_IMAGE},if=virtio,format=qcow2 \
+	-device virtio-blk-pci,drive=virtio-disk0 \
+	-drive file=${GUEST_IMAGE},if=none,id=virtio-disk0 \
         -monitor pty
 
         #sleep 45

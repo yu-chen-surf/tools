@@ -49,6 +49,22 @@ GUEST_IMAGE=ubuntu-2204.qcow2
 #    enp0s1:
 #      dhcp4: true
 #      optional: true
+# or:
+#network:
+#  version: 2
+#  ethernets:
+#    enp0s1:
+#      dhcp4: no
+#      addresses:
+#        - 10.0.2.15/24
+#      routes:
+#        - to: default
+#          via: 10.0.2.2
+#      nameservers:
+#        addresses:
+#          - 8.8.8.8
+#          - 8.8.4.4
+#
 # 3. netplan apply
 # 4. sudo ssh-keygen -A
 #    ssh-keygen: generating new host keys: RSA ECDSA ED25519

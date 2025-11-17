@@ -1,0 +1,113 @@
+From c3a15bd9c2e93a89d01c458b140fd1875855fdfb Mon Sep 17 00:00:00 2001
+From: Chen Yu <yu.c.chen@intel.com>
+Date: Mon, 17 Nov 2025 12:02:48 +0000
+Subject: [PATCH] sched/cache: Introduce new schedstat
+
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ include/linux/sched/topology.h |  9 ++++++
+ kernel/sched/stats.c           | 59 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+)
+
+diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+index 8702c1e731a0..123054fd8fb3 100644
+--- a/include/linux/sched/topology.h
++++ b/include/linux/sched/topology.h
+@@ -114,6 +114,15 @@ struct sched_domain {
+ 	unsigned int lb_nobusyg[CPU_MAX_IDLE_TYPES];
+ 	unsigned int lb_nobusyq[CPU_MAX_IDLE_TYPES];
+ 
++	unsigned int lb_llc[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_numa[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_llc_sg[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_numa_sg[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_llc_balance[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_numa_balance[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_llc_nr[CPU_MAX_IDLE_TYPES];
++	unsigned int lb_numa_nr[CPU_MAX_IDLE_TYPES];
++
+ 	/* Active load balancing */
+ 	unsigned int alb_count;
+ 	unsigned int alb_failed;
+diff --git a/kernel/sched/stats.c b/kernel/sched/stats.c
+index 3736f6102261..2636eb9095ab 100644
+--- a/kernel/sched/stats.c
++++ b/kernel/sched/stats.c
+@@ -106,8 +106,66 @@ void __update_stats_enqueue_sleeper(struct rq *rq, struct task_struct *p,
+  */
+ #define SCHEDSTAT_VERSION 18
+ 
++static char *itype_name[CPU_MAX_IDLE_TYPES] = {
++	[__CPU_NOT_IDLE] = "not_idle",
++	[CPU_IDLE] = "idle",
++	[CPU_NEWLY_IDLE] = "new_idle",
++};
++
++static char *itype_2_name(int type)
++{
++	return itype_name[type];
++}
++
++static int show_test_schedstat(struct seq_file *seq, void *v)
++{
++	int cpu;
++
++	if (v == (void *)1) {
++		seq_printf(seq, "version %d\n", SCHEDSTAT_VERSION);
++		seq_printf(seq, "timestamp %lu\n", jiffies);
++	} else {
++		struct rq *rq;
++		struct sched_domain *sd;
++		int dcount = 0;
++		cpu = (unsigned long)(v - 2);
++		rq = cpu_rq(cpu);
++		seq_printf(seq,
++		    "cpu%d\n",
++		    cpu);
++
++		/* domain-specific stats */
++		rcu_read_lock();
++		for_each_domain(cpu, sd) {
++			enum cpu_idle_type itype;
++
++			seq_printf(seq, "domain%d %s %*pb\n", dcount++, sd->name,
++				   cpumask_pr_args(sched_domain_span(sd)));
++			for (itype = 0; itype < CPU_MAX_IDLE_TYPES; itype++) {
++				seq_printf(seq, "%s %u %u %u %u %u %u %u %u %u\n",
++				    itype_2_name(itype),
++				    sd->lb_count[itype],
++				    sd->lb_llc[itype],
++				    sd->lb_numa[itype],
++				    sd->lb_llc_sg[itype],
++				    sd->lb_numa_sg[itype],
++				    sd->lb_llc_balance[itype],
++				    sd->lb_numa_balance[itype],
++				    sd->lb_llc_nr[itype],
++				    sd->lb_numa_nr[itype]);
++			}
++			seq_printf(seq, "\n");
++		}
++		rcu_read_unlock();
++	}
++	return 0;
++}
++
+ static int show_schedstat(struct seq_file *seq, void *v)
+ {
++	return show_test_schedstat(seq, v);
++
++#if 0
+ 	int cpu;
+ 
+ 	if (v == (void *)1) {
+@@ -163,6 +221,7 @@ static int show_schedstat(struct seq_file *seq, void *v)
+ 		}
+ 		rcu_read_unlock();
+ 	}
++#endif
+ 	return 0;
+ }
+ 
+-- 
+2.47.0
+
